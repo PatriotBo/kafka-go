@@ -1,4 +1,4 @@
-package kafka_go
+package main
 
 import (
 	"fmt"
