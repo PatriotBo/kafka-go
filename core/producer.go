@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"github.com/shopify/sarama"
@@ -8,7 +8,7 @@ import (
 var Address = []string{"localhost:9092"}
 
 type AsyncProducer struct {
-	producer sarama.AsyncProducer
+	Producer sarama.AsyncProducer
 }
 
 func (ap *AsyncProducer) InitProducer(brokers []string) {
@@ -18,7 +18,7 @@ func (ap *AsyncProducer) InitProducer(brokers []string) {
 		log.Println("new async producer failed:", err)
 		return
 	}
-	ap.producer = p
+	ap.Producer = p
 }
 
 func (ap *AsyncProducer) ProduceMessage(topic string, encoder sarama.Encoder) error {
@@ -26,14 +26,14 @@ func (ap *AsyncProducer) ProduceMessage(topic string, encoder sarama.Encoder) er
 		Topic: topic,
 		Value: encoder,
 	}
-	log.Printf("message: %v\n", *msg)
-	ap.producer.Input() <- msg
+	//log.Printf("message: %v\n", *msg)
+	ap.Producer.Input() <- msg
 
 	select {
-	case suc := <-ap.producer.Successes():
+	case suc := <-ap.Producer.Successes():
 		log.Printf("success offset=%d, timestamp=%s\n", suc.Offset, suc.Timestamp)
 		log.Printf("success partition=%v, topic=%v\n", suc.Partition, suc.Topic)
-	case fail := <-ap.producer.Errors():
+	case fail := <-ap.Producer.Errors():
 		log.Printf("failed err=%v\n", fail.Err.Error())
 	}
 	return nil

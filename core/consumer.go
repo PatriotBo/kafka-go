@@ -1,18 +1,18 @@
-package main
+package core
 
 import (
-	"github.com/Shopify/sarama"
+	"github.com/shopify/sarama"
 	"log"
 )
 
-type asyncConsumer struct {
+type AsyncConsumer struct {
 	ConsumerGroup sarama.Consumer
 }
 
 // NewConsumer 返回的实际上是一个consumer group； 需要调用NewPartitionConsumer来获得一个指定partition的普通consumer。
 // sarama中的consumer必须手动关闭，否则会造成内存泄露
-func InitConsumer(brokers []string)(asyncConsumer,error){
-	var ac asyncConsumer
+func InitConsumer(brokers []string)(AsyncConsumer,error){
+	var ac AsyncConsumer
 	config := sarama.NewConfig()
 	consumer, err := sarama.NewConsumer(brokers,config)
 	if err != nil {
@@ -24,7 +24,7 @@ func InitConsumer(brokers []string)(asyncConsumer,error){
 }
 
 //指定topic,partition和offset的consumer
-func (ac *asyncConsumer)GetPartitionConsumer(topic string,partition int32,offset int64)(sarama.PartitionConsumer,error){
+func (ac *AsyncConsumer)GetPartitionConsumer(topic string,partition int32,offset int64)(sarama.PartitionConsumer,error){
 	log.Printf("create partition consumer topic=%s partition=%d offset=%d\n",topic,partition,offset)
 	parConsumer, err := ac.ConsumerGroup.ConsumePartition(topic,partition,offset)
 	if err != nil {
@@ -34,7 +34,7 @@ func (ac *asyncConsumer)GetPartitionConsumer(topic string,partition int32,offset
 	return parConsumer,nil
 }
 
-func (ac *asyncConsumer)ConsumeMessage(parConsumer sarama.PartitionConsumer){
+func (ac *AsyncConsumer)ConsumeMessage(parConsumer sarama.PartitionConsumer){
 	defer parConsumer.Close()
 	ch := make(chan struct{})
 

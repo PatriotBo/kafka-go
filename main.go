@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
+	"github.com/shopify/sarama"
+	"kafka-go/core"
 	"log"
 	"sync"
 )
@@ -12,18 +13,21 @@ var topic = "test"
 
 func main(){
 	log.Println("开始生产--------")
+	ch := make(chan struct{})
 	go product()
 
 	log.Println("开始消费-------")
-	go consume()
+	//go consume()
+
+	<- ch
 }
 
 func product(){
-	var ap AsyncProducer
+	var ap core.AsyncProducer
 	ap.InitProducer(brokers)
-	defer ap.producer.Close()
+	defer ap.Producer.Close()
 	var wg sync.WaitGroup
-	for i := 0;i < 1000;i++ {
+	for i := 1001;i < 1010;i++ {
 		wg.Add(1)
 		message := fmt.Sprintf("生产： 这是第[%d]条消息",i)
 		go func(msg string) {
@@ -35,7 +39,7 @@ func product(){
 }
 
 func consume(){
-	ac, err := InitConsumer(brokers)
+	ac, err := core.InitConsumer(brokers)
 	defer ac.ConsumerGroup.Close()
 	if err != nil {
 		log.Println("init consumer failed:",err)
