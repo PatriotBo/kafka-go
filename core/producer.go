@@ -13,6 +13,9 @@ type AsyncProducer struct {
 
 func (ap *AsyncProducer) InitProducer(brokers []string) {
 	config := sarama.NewConfig()
+	config.Producer.Return.Successes = true
+	config.Producer.Return.Errors = true
+
 	p, err := sarama.NewAsyncProducer(brokers, config)
 	if err != nil {
 		log.Println("new async producer failed:", err)
@@ -26,7 +29,8 @@ func (ap *AsyncProducer) ProduceMessage(topic string, encoder sarama.Encoder) er
 		Topic: topic,
 		Value: encoder,
 	}
-	//log.Printf("message: %v\n", *msg)
+	//mess, _ := msg.Value.Encode()
+	//log.Printf("message: %v\n", string(mess))
 	ap.Producer.Input() <- msg
 
 	select {

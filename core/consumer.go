@@ -14,6 +14,7 @@ type AsyncConsumer struct {
 func InitConsumer(brokers []string)(AsyncConsumer,error){
 	var ac AsyncConsumer
 	config := sarama.NewConfig()
+	//sarama.NewConsumerGroup()
 	consumer, err := sarama.NewConsumer(brokers,config)
 	if err != nil {
 		log.Println("new consumer failedL ",err)
@@ -42,7 +43,8 @@ func (ac *AsyncConsumer)ConsumeMessage(parConsumer sarama.PartitionConsumer){
 		for {
 			select {
 			case msg := <- parConsumer.Messages():
-				log.Println("consumer message: ",msg)
+				log.Println("consumer message: ",string(msg.Value))
+				log.Println("consumer message offset: ",msg.Offset)
 			case err := <- parConsumer.Errors():
 				log.Println("consumer error:",err)
 				ch <- struct{}{}
